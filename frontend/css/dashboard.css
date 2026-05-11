@@ -249,3 +249,27 @@ kbd {
     margin: 8px;
 }
 .kanban-empty strong { color: var(--text-2); }
+
+/* ── PRAZO (modal tarefa) ───────────────────────────────────── */
+.prazo-block { margin-top: 4px; }
+.prazo-mode-group {
+    display: flex; flex-wrap: wrap; gap: 10px 16px;
+    margin: 8px 0 6px;
+    align-items: center;
+}
+.prazo-mode-option {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--text-2); cursor: pointer;
+    user-select: none;
+}
+.prazo-mode-option input {
+    accent-color: var(--accent);
+    width: 15px; height: 15px; cursor: pointer;
+}
+.prazo-hint {
+    margin: 0 0 10px;
+    font-size: 12px; color: var(--text-3); line-height: 1.45;
+}
+.prazo-hint strong { color: var(--text-2); font-weight: 600; }
+.prazo-dates-row { margin-top: 4px; }
+.prazo-dates-row .field-group { flex: 1; min-width: 140px; }

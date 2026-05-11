@@ -6,6 +6,7 @@ let statsChart = null;
 
 const chartDefaults = {
     type: localStorage.getItem('profileChartType') || 'doughnut',
+    barHorizontal: localStorage.getItem('profileChartBarH') === '1',
     colors: {
         todo: localStorage.getItem('profileColorTodo') || '#f59e0b',
         progress: localStorage.getItem('profileColorProgress') || '#3b82f6',
@@ -89,16 +90,58 @@ function removeProfileImage() {
     setAvatar(document.getElementById('profileAvatarBig'), document.getElementById('editName').value, '');
 }
 
+function chartGridColor() {
+    const t = document.documentElement.getAttribute('data-theme');
+    return t === 'light' ? 'rgba(15, 23, 42, 0.08)' : 'rgba(148, 163, 184, 0.18)';
+}
+
+function chartTickColor() {
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--text-3').trim();
+    return v || '#94a3b8';
+}
+
+function hexToRgba(hex, alpha) {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!m) return `rgba(59, 130, 246, ${alpha})`;
+    return `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, ${alpha})`;
+}
+
+function doughnutBorderColor() {
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--bg-2').trim();
+    return v || '#0f172a';
+}
+
+function updateBarHorizontalVisibility() {
+    const wrap = document.getElementById('chartBarHorizontalWrap');
+    const sel = document.getElementById('chartTypeSelect').value;
+    if (!wrap) return;
+    const show = sel === 'bar' || sel === 'histogram';
+    wrap.classList.toggle('hidden', !show);
+}
+
 function setupChartControls() {
-    document.getElementById('chartTypeSelect').value = chartDefaults.type;
+    const typeSel = document.getElementById('chartTypeSelect');
+    const barH = document.getElementById('chartBarHorizontal');
+
+    typeSel.value = chartDefaults.type;
+    if (barH) barH.checked = chartDefaults.barHorizontal;
+
     document.getElementById('colorTodo').value = chartDefaults.colors.todo;
     document.getElementById('colorProgress').value = chartDefaults.colors.progress;
     document.getElementById('colorDone').value = chartDefaults.colors.done;
 
-    document.getElementById('chartTypeSelect').addEventListener('change', e => {
-        localStorage.setItem('profileChartType', e.target.value);
+    typeSel.addEventListener('change', () => {
+        localStorage.setItem('profileChartType', typeSel.value);
+        updateBarHorizontalVisibility();
         renderStatsChart();
     });
+
+    if (barH) {
+        barH.addEventListener('change', () => {
+            localStorage.setItem('profileChartBarH', barH.checked ? '1' : '0');
+            renderStatsChart();
+        });
+    }
 
     [
         ['colorTodo', 'profileColorTodo'],
@@ -110,6 +153,8 @@ function setupChartControls() {
             renderStatsChart();
         });
     });
+
+    updateBarHorizontalVisibility();
 }
 
 function renderStatsChart() {
@@ -128,38 +173,158 @@ function renderStatsChart() {
     ];
     const labels = ['A Fazer', 'Em Progresso', 'Concluídas'];
     const ctx = document.getElementById('profileStatsChart');
+    const grid = chartGridColor();
+    const ticks = chartTickColor();
+    const horizontal = document.getElementById('chartBarHorizontal')?.checked;
 
     if (statsChart) statsChart.destroy();
 
-    const chartType = type === 'area' ? 'line' : type === 'histogram' ? 'bar' : type;
-    const dataset = {
-        label: 'Tarefas',
-        data: type === 'scatter'
-            ? values.map((v, i) => ({ x: i + 1, y: v }))
-            : values,
-        backgroundColor: type === 'line' || type === 'area' || type === 'scatter'
-            ? colors[1] + '33'
-            : colors,
-        borderColor: type === 'line' || type === 'area' || type === 'scatter'
-            ? colors[1]
-            : colors,
-        borderWidth: 2,
-        fill: type === 'area',
-        tension: 0.35,
+    const common = {
+        responsive: true,
+        maintainAspectRatio: false,
     };
 
-    statsChart = new Chart(ctx, {
-        type: chartType,
-        data: { labels, datasets: [dataset] },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: type === 'doughnut' } },
-            scales: chartType === 'doughnut' ? {} : {
-                y: { beginAtZero: true, ticks: { precision: 0 } },
+    let config;
+
+    if (type === 'doughnut') {
+        config = {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors,
+                    borderWidth: 3,
+                    borderColor: doughnutBorderColor(),
+                    hoverOffset: 10,
+                }],
             },
-        },
-    });
+            options: {
+                ...common,
+                cutout: '56%',
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: { color: ticks, padding: 14, font: { size: 12 } },
+                    },
+                },
+            },
+        };
+    } else if (type === 'bar' || type === 'histogram') {
+        const isHist = type === 'histogram';
+        config = {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: isHist ? 'Frequência (tarefas)' : 'Quantidade',
+                    data: values,
+                    backgroundColor: isHist ? colors.map(c => hexToRgba(c, 0.82)) : colors,
+                    borderColor: colors,
+                    borderWidth: 1,
+                    borderRadius: isHist ? 2 : 8,
+                    barPercentage: isHist ? 0.85 : 0.65,
+                }],
+            },
+            options: {
+                ...common,
+                indexAxis: horizontal ? 'y' : 'x',
+                plugins: {
+                    legend: { display: isHist, position: 'bottom', labels: { color: ticks } },
+                },
+                scales: horizontal
+                    ? {
+                        x: { beginAtZero: true, ticks: { precision: 0, color: ticks }, grid: { color: grid } },
+                        y: { ticks: { color: ticks }, grid: { display: false } },
+                    }
+                    : {
+                        x: { ticks: { color: ticks }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { precision: 0, color: ticks }, grid: { color: grid } },
+                    },
+            },
+        };
+    } else if (type === 'line' || type === 'area') {
+        config = {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Tarefas',
+                    data: values,
+                    fill: type === 'area',
+                    tension: 0.35,
+                    borderWidth: 3,
+                    pointRadius: 8,
+                    pointHoverRadius: 11,
+                    pointBackgroundColor: colors,
+                    pointBorderColor: colors,
+                    pointBorderWidth: 2,
+                    borderColor: colors[1],
+                    backgroundColor: type === 'area' ? hexToRgba(colors[1], 0.22) : 'transparent',
+                }],
+            },
+            options: {
+                ...common,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: ticks }, grid: { color: grid } },
+                    y: { beginAtZero: true, ticks: { precision: 0, color: ticks }, grid: { color: grid } },
+                },
+            },
+        };
+    } else if (type === 'scatter') {
+        config = {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Tarefas',
+                    data: values.map((y, i) => ({ x: i, y })),
+                    backgroundColor: colors,
+                    borderColor: colors.map(c => hexToRgba(c, 0.95)),
+                    borderWidth: 2,
+                    pointRadius: 13,
+                    pointHoverRadius: 16,
+                }],
+            },
+            options: {
+                ...common,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        min: -0.35,
+                        max: 2.35,
+                        ticks: {
+                            stepSize: 1,
+                            callback(val) {
+                                const i = Math.round(Number(val));
+                                return labels[i] !== undefined ? labels[i] : '';
+                            },
+                            color: ticks,
+                        },
+                        grid: { color: grid },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0, color: ticks },
+                        grid: { color: grid },
+                    },
+                },
+            },
+        };
+    } else {
+        config = {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: doughnutBorderColor() }],
+            },
+            options: { ...common, cutout: '56%', plugins: { legend: { display: true, position: 'bottom' } } },
+        };
+    }
+
+    statsChart = new Chart(ctx, config);
 }
 
 document.getElementById('profileForm').addEventListener('submit', async e => {

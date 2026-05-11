@@ -175,20 +175,29 @@
                         </select>
                     </div>
                 </div>
-                <div class="modal-row">
-                    <div class="field-group">
-                        <label class="field-label">Categoria</label>
-                        <select id="taskCategory" class="field-input field-select">
-                            <option value="">Nenhuma</option>
-                        </select>
+                <div class="field-group">
+                    <label class="field-label">Categoria</label>
+                    <select id="taskCategory" class="field-input field-select">
+                        <option value="">Nenhuma</option>
+                    </select>
+                </div>
+                <div class="field-group prazo-block">
+                    <span class="field-label">Prazo / vencimento</span>
+                    <div class="prazo-mode-group" role="radiogroup" aria-label="Tipo de prazo">
+                        <label class="prazo-mode-option"><input type="radio" name="taskPrazoMode" value="none" checked> Sem prazo</label>
+                        <label class="prazo-mode-option"><input type="radio" name="taskPrazoMode" value="single"> Uma data</label>
+                        <label class="prazo-mode-option"><input type="radio" name="taskPrazoMode" value="range"> Intervalo (de até)</label>
                     </div>
-                    <div class="field-group">
-                        <label class="field-label">Início do prazo</label>
-                        <input type="date" id="taskStartDate" class="field-input">
-                    </div>
-                    <div class="field-group">
-                        <label class="field-label">Fim do prazo</label>
-                        <input type="date" id="taskEndDate" class="field-input">
+                    <p class="field-hint prazo-hint hidden">Ex.: <strong>05/06/2026</strong> até <strong>08/06/2026</strong> — preencha início e fim.</p>
+                    <div class="modal-row prazo-dates-row hidden" id="prazoDatesRow">
+                        <div class="field-group" id="taskStartDateGroup">
+                            <label class="field-label" for="taskStartDate" id="taskStartDateLabel">Início (de)</label>
+                            <input type="date" id="taskStartDate" class="field-input">
+                        </div>
+                        <div class="field-group" id="taskEndDateGroup">
+                            <label class="field-label" for="taskEndDate" id="taskEndDateLabel">Fim (até)</label>
+                            <input type="date" id="taskEndDate" class="field-input">
+                        </div>
                     </div>
                 </div>
                 <div class="field-group">

@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadTasks();
     await loadCategoriesIntoSelect('taskCategory');
     document.getElementById('taskForm').addEventListener('submit', handleTaskSubmit);
+    setupTaskPrazoModeListeners();
 });
 
 // --- Estrutura do board -----------------------------------------
@@ -205,6 +206,7 @@ async function openEditModal(id) {
     document.getElementById('taskStartDate').value = task.startDate || '';
     document.getElementById('taskEndDate').value   = taskEndDate(task) || '';
     document.getElementById('taskEstimate').value = task.estimatedMinutes || '';
+    setTaskPrazoMode(inferPrazoModeFromTask(task));
     await loadCategoriesIntoSelect('taskCategory');
     if (task.categoryId) document.getElementById('taskCategory').value = task.categoryId;
     document.getElementById('modalTitle').textContent = 'Editar Tarefa';
@@ -221,6 +223,7 @@ function resetModal() {
     document.getElementById('taskTitleError').textContent = '';
     document.getElementById('modalAlert').classList.add('hidden');
     loadCategoriesIntoSelect('taskCategory');
+    setTaskPrazoMode('none');
 }
 
 function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
@@ -240,16 +243,15 @@ async function handleTaskSubmit(e) {
 
     const catVal = document.getElementById('taskCategory').value;
     const estVal = parseInt(document.getElementById('taskEstimate').value, 10);
-    const startDate = document.getElementById('taskStartDate').value || null;
-    const endDate   = document.getElementById('taskEndDate').value || null;
-
-    if (startDate && endDate && startDate > endDate) {
+    const dates = validateAndGetTaskDates();
+    if (!dates.ok) {
         const alertEl = document.getElementById('modalAlert');
-        alertEl.textContent = 'A data inicial não pode ser depois da data final';
+        alertEl.textContent = dates.message;
         alertEl.className = 'alert error';
         alertEl.classList.remove('hidden');
         return;
     }
+    const { startDate, endDate } = dates;
 
     const body = {
         title,

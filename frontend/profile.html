@@ -55,6 +55,7 @@
             </div>
 
             <div class="profile-body">
+                <div class="profile-main-col">
                 <!-- Edit Profile -->
                 <div class="profile-section">
                     <div class="section-header">
@@ -133,37 +134,48 @@
                         </button>
                     </form>
                 </div>
+                </div>
 
-                <!-- Stats hub -->
-                <div class="profile-section profile-stats-hub">
-                    <div class="section-header">
-                        <h3 class="section-title">Estatísticas</h3>
+                <!-- Hub de estatísticas (coluna direita) -->
+                <aside class="profile-section profile-stats-hub" aria-labelledby="statsHubTitle">
+                    <div class="stats-hub-header">
+                        <div class="stats-hub-icon" aria-hidden="true">◫</div>
+                        <div>
+                            <h3 class="section-title" id="statsHubTitle">Hub de estatísticas</h3>
+                            <p class="section-subtitle stats-hub-sub">Distribuição das suas tarefas por status — personalize o tipo de gráfico e as cores.</p>
+                        </div>
                     </div>
                     <div class="chart-toolbar">
-                        <select class="field-input field-select" id="chartTypeSelect">
+                        <label class="chart-select-label" for="chartTypeSelect">Tipo de visualização</label>
+                        <select class="field-input field-select chart-type-select" id="chartTypeSelect">
                             <option value="doughnut">Gráfico de setores</option>
-                            <option value="bar">Gráfico de colunas/barras</option>
+                            <option value="bar">Gráfico de colunas / barras</option>
                             <option value="line">Gráfico de linhas</option>
                             <option value="area">Gráfico de área</option>
                             <option value="scatter">Gráfico de dispersão</option>
                             <option value="histogram">Histograma</option>
                         </select>
+                        <label class="chart-bar-toggle hidden" id="chartBarHorizontalWrap">
+                            <input type="checkbox" id="chartBarHorizontal">
+                            <span>Barras horizontais</span>
+                        </label>
                     </div>
+                    <p class="field-hint chart-colors-hint">Cores por status</p>
                     <div class="chart-color-row">
-                        <label><span>A Fazer</span><input type="color" id="colorTodo" value="#f59e0b"></label>
-                        <label><span>Em Progresso</span><input type="color" id="colorProgress" value="#3b82f6"></label>
-                        <label><span>Concluídas</span><input type="color" id="colorDone" value="#22d3a5"></label>
+                        <label class="chart-color-item"><span>A Fazer</span><input type="color" id="colorTodo" value="#f59e0b" title="A Fazer"></label>
+                        <label class="chart-color-item"><span>Em progresso</span><input type="color" id="colorProgress" value="#3b82f6" title="Em progresso"></label>
+                        <label class="chart-color-item"><span>Concluídas</span><input type="color" id="colorDone" value="#22d3a5" title="Concluídas"></label>
                     </div>
                     <div class="profile-chart-wrap">
-                        <canvas id="profileStatsChart"></canvas>
+                        <canvas id="profileStatsChart" role="img" aria-label="Gráfico de estatísticas de tarefas"></canvas>
                     </div>
-                </div>
+                </aside>
             </div>
         </div>
     </main>
 
     <div id="toastContainer" class="toast-container"></div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="js/shared.js"></script>
     <script src="js/profile.js"></script>
 </body>

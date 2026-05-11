@@ -236,3 +236,114 @@ function escHtml(s) {
 function safeColor(color, fallback = '#3b82f6') {
     return /^#[0-9A-Fa-f]{3}([0-9A-Fa-f]{3})?$/.test(color) ? color : fallback;
 }
+
+// --- Prazo no modal de tarefa (Dashboard + Kanban) --------------
+
+function _taskEndDateForPrazo(task) {
+    if (!task) return '';
+    return task.endDate || task.dueDate || '';
+}
+
+/** Define modo a partir dos campos da tarefa: none | single | range */
+function inferPrazoModeFromTask(task) {
+    const end = _taskEndDateForPrazo(task);
+    const start = task.startDate;
+    if (start && end) return 'range';
+    if (end) return 'single';
+    if (start) return 'range';
+    return 'none';
+}
+
+function syncPrazoModeUI() {
+    const modeInput = document.querySelector('input[name="taskPrazoMode"]:checked');
+    const mode = modeInput ? modeInput.value : 'none';
+    const row = document.getElementById('prazoDatesRow');
+    const gStart = document.getElementById('taskStartDateGroup');
+    const lblEnd = document.getElementById('taskEndDateLabel');
+    const lblStart = document.getElementById('taskStartDateLabel');
+    const hint = document.querySelector('.prazo-hint');
+    if (!row || !gStart) return;
+
+    if (mode === 'none') {
+        row.classList.add('hidden');
+        if (hint) hint.classList.add('hidden');
+        return;
+    }
+
+    row.classList.remove('hidden');
+    if (hint) hint.classList.toggle('hidden', mode !== 'range');
+
+    if (mode === 'single') {
+        gStart.classList.add('hidden');
+        if (lblEnd) lblEnd.textContent = 'Data de vencimento';
+    } else {
+        gStart.classList.remove('hidden');
+        if (lblStart) lblStart.textContent = 'Início (de)';
+        if (lblEnd) lblEnd.textContent = 'Fim (até)';
+    }
+}
+
+function setTaskPrazoMode(mode) {
+    const allowed = ['none', 'single', 'range'];
+    const m = allowed.includes(mode) ? mode : 'none';
+    const el = document.querySelector(`input[name="taskPrazoMode"][value="${m}"]`);
+    if (el) el.checked = true;
+    else {
+        const n = document.querySelector('input[name="taskPrazoMode"][value="none"]');
+        if (n) n.checked = true;
+    }
+    syncPrazoModeUI();
+}
+
+function setupTaskPrazoModeListeners() {
+    document.querySelectorAll('input[name="taskPrazoMode"]').forEach(r => {
+        if (r.dataset.prazoBound === '1') return;
+        r.dataset.prazoBound = '1';
+        r.addEventListener('change', () => {
+            if (r.value === 'single') {
+                const s = document.getElementById('taskStartDate');
+                if (s) s.value = '';
+            }
+            if (r.value === 'none') {
+                const s = document.getElementById('taskStartDate');
+                const e = document.getElementById('taskEndDate');
+                if (s) s.value = '';
+                if (e) e.value = '';
+            }
+            syncPrazoModeUI();
+        });
+    });
+    syncPrazoModeUI();
+}
+
+/** Valida prazo conforme radios do modal; retorna datas para o JSON da API. */
+function validateAndGetTaskDates() {
+    const mode = document.querySelector('input[name="taskPrazoMode"]:checked')?.value || 'none';
+    const startEl = document.getElementById('taskStartDate');
+    const endEl = document.getElementById('taskEndDate');
+    let startDate = (startEl && startEl.value) ? startEl.value : null;
+    let endDate = (endEl && endEl.value) ? endEl.value : null;
+
+    if (mode === 'none') {
+        return { ok: true, startDate: null, endDate: null };
+    }
+    if (mode === 'single') {
+        if (!endDate) {
+            return { ok: false, message: 'Informe a data de vencimento ou escolha "Sem prazo".' };
+        }
+        return { ok: true, startDate: null, endDate };
+    }
+    if (mode === 'range') {
+        if (!startDate || !endDate) {
+            return {
+                ok: false,
+                message: 'No intervalo, preencha início e fim (ex.: 05/06/2026 até 08/06/2026).',
+            };
+        }
+        if (startDate > endDate) {
+            return { ok: false, message: 'A data inicial não pode ser depois da data final.' };
+        }
+        return { ok: true, startDate, endDate };
+    }
+    return { ok: true, startDate: null, endDate: null };
+}
