@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow — Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth-page">
+
+    <div class="auth-bg">
+        <div class="grid-overlay"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-card" id="loginCard">
+            <div class="auth-header">
+                <div class="logo">
+                    <span class="logo-icon">⬡</span>
+                    <span class="logo-text">TaskFlow</span>
+                </div>
+                <h1 class="auth-title">Bem-vindo de volta</h1>
+                <p class="auth-subtitle">Entre para gerenciar suas tarefas</p>
+            </div>
+
+            <div id="authAlert" class="alert hidden"></div>
+
+            <form id="loginForm" class="auth-form" novalidate>
+                <div class="field-group">
+                    <label class="field-label" for="loginEmail">Email</label>
+                    <div class="field-wrapper">
+                        <span class="field-icon">◈</span>
+                        <input type="email" id="loginEmail" name="email"
+                               class="field-input" placeholder="seu@email.com" autocomplete="email">
+                    </div>
+                    <span class="field-error" id="loginEmailError"></span>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="loginPassword">Senha</label>
+                    <div class="field-wrapper">
+                        <span class="field-icon">◉</span>
+                        <input type="password" id="loginPassword" name="password"
+                               class="field-input" placeholder="••••••••" autocomplete="current-password">
+                        <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
+                            <span id="loginPasswordEye">👁</span>
+                        </button>
+                    </div>
+                    <span class="field-error" id="loginPasswordError"></span>
+                </div>
+
+                <button type="submit" class="btn-primary" id="loginBtn">
+                    <span class="btn-text">Entrar</span>
+                    <span class="btn-loader hidden">⟳</span>
+                </button>
+            </form>
+
+            <div class="auth-divider"><span>ou</span></div>
+
+            <p class="auth-switch">
+                Não tem conta?
+                <button class="link-btn" onclick="showRegister()">Criar conta grátis →</button>
+            </p>
+        </div>
+
+        <!-- REGISTER CARD -->
+        <div class="auth-card hidden" id="registerCard">
+            <div class="auth-header">
+                <div class="logo">
+                    <span class="logo-icon">⬡</span>
+                    <span class="logo-text">TaskFlow</span>
+                </div>
+                <h1 class="auth-title">Criar conta</h1>
+                <p class="auth-subtitle">Comece a organizar suas tarefas hoje</p>
+            </div>
+
+            <div id="registerAlert" class="alert hidden"></div>
+
+            <form id="registerForm" class="auth-form" novalidate>
+                <div class="field-group">
+                    <label class="field-label" for="registerName">Nome completo</label>
+                    <div class="field-wrapper">
+                        <span class="field-icon">◈</span>
+                        <input type="text" id="registerName" name="name"
+                               class="field-input" placeholder="Seu nome" autocomplete="name">
+                    </div>
+                    <span class="field-error" id="registerNameError"></span>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="registerEmail">Email</label>
+                    <div class="field-wrapper">
+                        <span class="field-icon">◈</span>
+                        <input type="email" id="registerEmail" name="email"
+                               class="field-input" placeholder="seu@email.com" autocomplete="email">
+                    </div>
+                    <span class="field-error" id="registerEmailError"></span>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="registerPassword">Senha</label>
+                    <div class="field-wrapper">
+                        <span class="field-icon">◉</span>
+                        <input type="password" id="registerPassword" name="password"
+                               class="field-input" placeholder="Mín. 6 caracteres" autocomplete="new-password">
+                        <button type="button" class="toggle-password" onclick="togglePassword('registerPassword')">
+                            <span id="registerPasswordEye">👁</span>
+                        </button>
+                    </div>
+                    <span class="field-error" id="registerPasswordError"></span>
+                </div>
+
+                <button type="submit" class="btn-primary" id="registerBtn">
+                    <span class="btn-text">Criar conta</span>
+                    <span class="btn-loader hidden">⟳</span>
+                </button>
+            </form>
+
+            <div class="auth-divider"><span>ou</span></div>
+
+            <p class="auth-switch">
+                Já tem conta?
+                <button class="link-btn" onclick="showLogin()">Fazer login →</button>
+            </p>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>

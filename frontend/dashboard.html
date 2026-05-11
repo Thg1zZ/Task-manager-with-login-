@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/kanban.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body class="dashboard-page">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">⬡</span>
+                <span class="logo-text">TaskFlow</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav" id="sidebarNav"></nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <div class="user-info">
+                    <span class="user-name"  id="userName">—</span>
+                    <span class="user-email" id="userEmail">—</span>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="logout()" title="Sair">⏻</button>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <div class="search-wrapper">
+                    <span class="search-icon">⌕</span>
+                    <input type="text" class="search-input" id="searchInput"
+                           placeholder="Buscar tarefas… (N = nova, ? = atalhos)"
+                           oninput="debounceSearch(this.value)">
+                </div>
+            </div>
+            <div class="topbar-right">
+                <select class="sort-select" id="catFilter" onchange="applyCatFilter(this.value)">
+                    <option value="">Todas as categorias</option>
+                </select>
+                <div class="view-toggle">
+                    <button class="view-btn active" id="viewGrid" onclick="setView('grid')" title="Grade">⊞</button>
+                    <button class="view-btn" id="viewList" onclick="setView('list')" title="Lista">☰</button>
+                </div>
+                <button class="btn-export" onclick="openExportMenu()" title="Exportar">↓ Export</button>
+                <button class="btn-new-task" onclick="openModal()">+ Nova Tarefa</button>
+            </div>
+        </header>
+
+        <!-- STATS -->
+        <section class="stats-section">
+            <div class="stat-card clickable" onclick="filterByStatus('ALL')" title="Todas">
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Total</div>
+                <div class="stat-bar"><div class="stat-fill" style="width:100%;background:var(--accent)"></div></div>
+            </div>
+            <div class="stat-card clickable" onclick="filterByStatus('TODO')" title="A Fazer">
+                <div class="stat-value" id="statTodo">0</div>
+                <div class="stat-label">A Fazer</div>
+                <div class="stat-bar"><div class="stat-fill stat-fill-todo" id="fillTodo"></div></div>
+            </div>
+            <div class="stat-card clickable" onclick="filterByStatus('IN_PROGRESS')" title="Em Progresso">
+                <div class="stat-value" id="statProgress">0</div>
+                <div class="stat-label">Em Progresso</div>
+                <div class="stat-bar"><div class="stat-fill stat-fill-progress" id="fillProgress"></div></div>
+            </div>
+            <div class="stat-card clickable" onclick="filterByStatus('DONE')" title="Concluídas">
+                <div class="stat-value" id="statDone">0</div>
+                <div class="stat-label">Concluídas</div>
+                <div class="stat-bar"><div class="stat-fill stat-fill-done" id="fillDone"></div></div>
+            </div>
+            <div class="stat-card clickable" onclick="filterByStatus('OVERDUE')" title="Vencidas">
+                <div class="stat-value stat-overdue" id="statOverdue">0</div>
+                <div class="stat-label">Vencidas</div>
+                <div class="stat-bar"><div class="stat-fill" style="background:var(--red)" id="fillOverdue"></div></div>
+            </div>
+        </section>
+
+        <!-- FILTER TABS + BULK BAR -->
+        <div class="filter-bar-wrapper">
+            <div class="filter-tabs" id="filterTabs">
+                <button class="filter-tab active" data-filter="ALL"        onclick="setFilterTab(this,'ALL')">Todas</button>
+                <button class="filter-tab"         data-filter="TODO"       onclick="setFilterTab(this,'TODO')">A Fazer</button>
+                <button class="filter-tab"         data-filter="IN_PROGRESS" onclick="setFilterTab(this,'IN_PROGRESS')">Em Progresso</button>
+                <button class="filter-tab"         data-filter="DONE"       onclick="setFilterTab(this,'DONE')">Concluídas</button>
+                <button class="filter-tab filter-tab-red" data-filter="OVERDUE" onclick="setFilterTab(this,'OVERDUE')">⚠ Vencidas</button>
+            </div>
+            <div class="sort-wrapper">
+                <select class="sort-select" onchange="sortTasks(this.value)">
+                    <option value="newest">Mais recentes</option>
+                    <option value="oldest">Mais antigas</option>
+                    <option value="priority">Prioridade</option>
+                    <option value="dueDate">Vencimento</option>
+                    <option value="title">Título A→Z</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- BULK ACTION BAR (hidden until selection) -->
+        <div class="bulk-bar hidden" id="bulkBar">
+            <span id="bulkCount">0 selecionadas</span>
+            <div class="bulk-actions">
+                <button class="bulk-btn" onclick="bulkChangeStatus('TODO')">○ A Fazer</button>
+                <button class="bulk-btn" onclick="bulkChangeStatus('IN_PROGRESS')">◑ Em Progresso</button>
+                <button class="bulk-btn" onclick="bulkChangeStatus('DONE')">● Concluída</button>
+                <button class="bulk-btn bulk-btn-danger" onclick="bulkDelete()">✕ Excluir</button>
+                <button class="bulk-btn" onclick="clearSelection()">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- TASKS SECTION -->
+        <section class="tasks-section">
+            <div id="loadingState" class="empty-state">
+                <div class="empty-icon spin">⟳</div>
+                <p>Carregando tarefas...</p>
+            </div>
+            <div id="emptyState" class="empty-state hidden">
+                <div class="empty-icon">◫</div>
+                <p id="emptyMessage">Nenhuma tarefa encontrada</p>
+                <button class="btn-primary small" onclick="openModal()">+ Criar primeira tarefa</button>
+            </div>
+            <div class="task-grid" id="taskGrid"></div>
+        </section>
+    </main>
+
+    <!-- ═══ MODAL: CREATE / EDIT ═══ -->
+    <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOutside(event)">
+        <div class="modal-card" id="modalCard">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Nova Tarefa</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div id="modalAlert" class="alert hidden"></div>
+            <form id="taskForm" class="modal-form" novalidate>
+                <input type="hidden" id="taskId">
+                <div class="field-group">
+                    <label class="field-label">Título *</label>
+                    <div class="field-wrapper">
+                        <input type="text" id="taskTitle" class="field-input" placeholder="Título da tarefa" maxlength="200">
+                    </div>
+                    <span class="field-error" id="taskTitleError"></span>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Descrição</label>
+                    <textarea id="taskDesc" class="field-input field-textarea" rows="3" placeholder="Detalhes da tarefa..." maxlength="2000"></textarea>
+                </div>
+                <div class="modal-row">
+                    <div class="field-group">
+                        <label class="field-label">Status</label>
+                        <select id="taskStatus" class="field-input field-select">
+                            <option value="TODO">A Fazer</option>
+                            <option value="IN_PROGRESS">Em Progresso</option>
+                            <option value="DONE">Concluída</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Prioridade</label>
+                        <select id="taskPriority" class="field-input field-select">
+                            <option value="LOW">Baixa</option>
+                            <option value="MEDIUM" selected>Média</option>
+                            <option value="HIGH">Alta</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-row">
+                    <div class="field-group">
+                        <label class="field-label">Categoria</label>
+                        <select id="taskCategory" class="field-input field-select">
+                            <option value="">Nenhuma</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Início do prazo</label>
+                        <input type="date" id="taskStartDate" class="field-input">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Fim do prazo</label>
+                        <input type="date" id="taskEndDate" class="field-input">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Estimativa (minutos)</label>
+                    <input type="number" id="taskEstimate" class="field-input" min="1" placeholder="ex: 90">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-ghost" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="saveTaskBtn">
+                        <span class="btn-text">Salvar Tarefa</span>
+                        <span class="btn-loader hidden">⟳</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ═══ MODAL: DETAIL + COMMENTS ═══ -->
+    <div class="modal-overlay hidden" id="detailOverlay" onclick="closeDetailOutside(event)">
+        <div class="modal-card modal-detail" id="detailCard">
+            <div class="modal-header">
+                <div class="detail-header-info">
+                    <div id="detailBadges" class="detail-badges"></div>
+                    <h3 class="modal-title" id="detailTitle">—</h3>
+                </div>
+                <div class="detail-header-actions">
+                    <button class="task-action-btn" id="detailEditBtn" onclick="editFromDetail()">✎ Editar</button>
+                    <button class="modal-close" onclick="closeDetail()">✕</button>
+                </div>
+            </div>
+            <div class="detail-body">
+                <div class="detail-meta-row" id="detailMetaRow"></div>
+                <p class="detail-description" id="detailDescription"></p>
+                <div class="detail-divider"></div>
+                <!-- Comments -->
+                <div class="comments-section">
+                    <h4 class="comments-title">Comentários <span id="commentCount" class="comments-count">0</span></h4>
+                    <div id="commentsList" class="comments-list"></div>
+                    <form id="commentForm" class="comment-form" onsubmit="submitComment(event)">
+                        <div class="comment-input-row">
+                            <div class="comment-avatar" id="commentAvatar">?</div>
+                            <input type="text" id="commentInput" class="field-input comment-input"
+                                   placeholder="Adicionar comentário… (Enter para enviar)" maxlength="1000">
+                            <button type="submit" class="btn-primary small" id="commentSubmitBtn">
+                                <span class="btn-text">↵</span>
+                                <span class="btn-loader hidden">⟳</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ MODAL: DELETE CONFIRM ═══ -->
+    <div class="modal-overlay hidden" id="deleteOverlay" onclick="closeDeleteOutside(event)">
+        <div class="modal-card modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">Excluir Tarefa</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+            </div>
+            <p class="delete-confirm-text">Tem certeza que deseja excluir <strong id="deleteTaskName"></strong>?</p>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ EXPORT MENU ═══ -->
+    <div class="export-menu hidden" id="exportMenu">
+        <button onclick="exportTasks('csv')">📄 Exportar CSV</button>
+        <button onclick="exportTasks('json')">📦 Exportar JSON</button>
+    </div>
+
+    <!-- ═══ KEYBOARD SHORTCUTS PANEL ═══ -->
+    <div class="modal-overlay hidden" id="shortcutsOverlay" onclick="closeShortcuts()">
+        <div class="modal-card modal-sm shortcuts-panel" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">⌨ Atalhos de Teclado</h3>
+                <button class="modal-close" onclick="closeShortcuts()">✕</button>
+            </div>
+            <div class="shortcuts-list">
+                <div class="shortcut-row"><kbd>N</kbd><span>Nova tarefa</span></div>
+                <div class="shortcut-row"><kbd>K</kbd><span>Abrir Kanban</span></div>
+                <div class="shortcut-row"><kbd>/</kbd><span>Focar busca</span></div>
+                <div class="shortcut-row"><kbd>?</kbd><span>Ver atalhos</span></div>
+                <div class="shortcut-row"><kbd>Esc</kbd><span>Fechar modal</span></div>
+                <div class="shortcut-row"><kbd>1</kbd><span>Filtrar: Todas</span></div>
+                <div class="shortcut-row"><kbd>2</kbd><span>Filtrar: A Fazer</span></div>
+                <div class="shortcut-row"><kbd>3</kbd><span>Filtrar: Em Progresso</span></div>
+                <div class="shortcut-row"><kbd>4</kbd><span>Filtrar: Concluídas</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="js/shared.js"></script>
+    <script src="js/tasks.js"></script>
+</body>
+</html>

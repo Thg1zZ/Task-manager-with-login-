@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow — Categorias</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/kanban.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body class="dashboard-page">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><span class="logo-icon">⬡</span><span class="logo-text">TaskFlow</span></div>
+        </div>
+        <nav class="sidebar-nav" id="sidebarNav"></nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <div class="user-info">
+                    <span class="user-name" id="userName">—</span>
+                    <span class="user-email" id="userEmail">—</span>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="logout()" title="Sair">⏻</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <h2 class="page-title">Categorias</h2>
+            </div>
+            <button class="btn-new-task" onclick="openCatModal()">+ Nova Categoria</button>
+        </header>
+
+        <div class="page-content">
+            <section class="suggested-cats">
+                <div>
+                    <h3 class="section-title">Categorias sugeridas</h3>
+                    <p class="section-subtitle">Crie atalhos comuns com um clique e continue podendo personalizar tudo.</p>
+                </div>
+                <div class="suggested-cat-grid" id="suggestedCatGrid"></div>
+            </section>
+
+            <div id="catEmpty" class="empty-state hidden">
+                <div class="empty-icon">◈</div>
+                <p>Nenhuma categoria criada ainda</p>
+                <button class="btn-primary small" onclick="openCatModal()">+ Criar categoria</button>
+            </div>
+            <div class="cat-grid" id="catGrid"></div>
+        </div>
+    </main>
+
+    <!-- Modal Categoria -->
+    <div class="modal-overlay hidden" id="catModalOverlay" onclick="closeCatModalOutside(event)">
+        <div class="modal-card modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title" id="catModalTitle">Nova Categoria</h3>
+                <button class="modal-close" onclick="closeCatModal()">✕</button>
+            </div>
+            <form id="catForm" class="modal-form" novalidate>
+                <input type="hidden" id="catId">
+                <div class="field-group">
+                    <label class="field-label">Nome *</label>
+                    <div class="field-wrapper"><input type="text" id="catName" class="field-input" placeholder="Ex: Trabalho" maxlength="50"></div>
+                    <span class="field-error" id="catNameErr"></span>
+                </div>
+                <div class="modal-row">
+                    <div class="field-group">
+                        <label class="field-label">Ícone (emoji)</label>
+                        <div class="field-wrapper"><input type="text" id="catIcon" class="field-input" placeholder="🏠" maxlength="4"></div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Cor</label>
+                        <div class="color-picker-row">
+                            <input type="color" id="catColorPicker" value="#3b82f6" style="width:40px;height:38px;border:none;background:none;cursor:pointer;padding:0">
+                            <input type="text" id="catColor" class="field-input" value="#3b82f6" placeholder="#3b82f6" maxlength="7" style="flex:1">
+                        </div>
+                    </div>
+                </div>
+                <!-- Color presets -->
+                <div class="color-presets">
+                    <span class="presets-label">Cores rápidas:</span>
+                    <div class="presets-row" id="colorPresets"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-ghost" onclick="closeCatModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="saveCatBtn">
+                        <span class="btn-text">Salvar</span>
+                        <span class="btn-loader hidden">⟳</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete confirm -->
+    <div class="modal-overlay hidden" id="deleteCatOverlay" onclick="closeDeleteCatOutside(event)">
+        <div class="modal-card modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">Excluir Categoria</h3>
+                <button class="modal-close" onclick="closeDeleteCat()">✕</button>
+            </div>
+            <p class="delete-confirm-text">Excluir <strong id="deleteCatName"></strong>? As tarefas desta categoria perderão a associação.</p>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeDeleteCat()">Cancelar</button>
+                <button class="btn-danger" id="confirmDeleteCatBtn" onclick="confirmDeleteCat()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="js/shared.js"></script>
+    <script src="js/categories.js"></script>
+</body>
+</html>
