@@ -29,6 +29,9 @@ public class AuthService {
     @Autowired
     private JwtTokenProvider tokenProvider;
 
+    @Autowired
+    private DefaultCategorySeeder defaultCategorySeeder;
+
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         // Mensagem genérica: não revelar se o email já existe (user enumeration)
@@ -43,6 +46,7 @@ public class AuthService {
                 .build();
 
         User saved = userRepository.save(user);
+        defaultCategorySeeder.seedForNewUser(saved);
         String token = tokenProvider.generateToken(saved.getEmail());
         return new AuthResponse(token, saved.getId(), saved.getName(), saved.getEmail());
     }

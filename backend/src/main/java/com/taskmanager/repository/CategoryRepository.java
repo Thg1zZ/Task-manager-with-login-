@@ -21,4 +21,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query("SELECT COUNT(t) FROM Task t WHERE t.category.id = :categoryId")
     long countTasksByCategoryId(@Param("categoryId") Long categoryId);
+
+    @Query("SELECT COUNT(c) FROM Category c WHERE c.user.id = :userId")
+    long countByUserId(@Param("userId") Long userId);
 }

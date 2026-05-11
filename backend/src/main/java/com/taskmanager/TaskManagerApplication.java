@@ -2,6 +2,7 @@ package com.taskmanager;
 
 import com.taskmanager.entity.User;
 import com.taskmanager.repository.UserRepository;
+import com.taskmanager.service.DefaultCategorySeeder;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,7 +17,8 @@ public class TaskManagerApplication {
     }
 
     @Bean
-    ApplicationRunner ensureDemoAdmin(UserRepository users, PasswordEncoder encoder) {
+    ApplicationRunner ensureDemoAdmin(UserRepository users, PasswordEncoder encoder,
+                                      DefaultCategorySeeder defaultCategorySeeder) {
         return args -> {
             final String demoEmail = "admin@teste.com";
             User admin = users.findByEmailIgnoreCase(demoEmail)
@@ -39,6 +41,10 @@ public class TaskManagerApplication {
             if (admin.getId() == null || dirty) {
                 users.save(admin);
             }
+
+            User adminResolved = users.findByEmailIgnoreCase(demoEmail)
+                    .orElseThrow(() -> new IllegalStateException("Usuário demo não encontrado após bootstrap"));
+            defaultCategorySeeder.seedIfEmpty(adminResolved);
         };
     }
 }
