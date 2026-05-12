@@ -34,7 +34,10 @@
                 <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
                 <h2 class="page-title">Categorias</h2>
             </div>
-            <button class="btn-new-task" onclick="openCatModal()">+ Nova Categoria</button>
+            <div class="topbar-right" style="display:flex; align-items:center; gap:10px;">
+                <button id="themeToggleBtn" class="btn-ghost" onclick="toggleTheme()" style="padding: 6px 12px; font-size: 16px;"></button>
+                <button class="btn-new-task" onclick="openCatModal()">+ Nova Categoria</button>
+            </div>
         </header>
 
         <div class="page-content">

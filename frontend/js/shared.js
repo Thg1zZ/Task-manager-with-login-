@@ -33,11 +33,6 @@ function buildSidebar() {
                 </a>`;
     }).join('');
 
-    const themeBtn = document.createElement('button');
-    themeBtn.className = 'nav-item';
-    themeBtn.id = 'themeToggleBtn';
-    themeBtn.addEventListener('click', toggleTheme);
-    nav.appendChild(themeBtn);
     updateThemeBtn();
 
     const av = document.getElementById('userAvatar');
@@ -141,14 +136,8 @@ function updateThemeBtn() {
     const btn = document.getElementById('themeToggleBtn');
     if (!btn) return;
     const isDark = (localStorage.getItem('theme') || 'dark') === 'dark';
-    btn.innerHTML = '';
-    const icon = document.createElement('span');
-    icon.className = 'nav-icon';
-    icon.textContent = isDark ? '☀' : '◑';
-    const label = document.createElement('span');
-    label.textContent = isDark ? 'Tema Claro' : 'Tema Escuro';
-    btn.appendChild(icon);
-    btn.appendChild(label);
+    btn.innerHTML = isDark ? '☀' : '◑';
+    btn.title = isDark ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro';
 }
 
 // --- Sidebar mobile ---------------------------------------------
