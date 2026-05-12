@@ -3,6 +3,7 @@
 let profileImageData = '';
 let profileStats = {};
 let statsChart = null;
+let cropperInstance = null;
 
 const chartDefaults = {
     type: localStorage.getItem('profileChartType') || 'doughnut',
@@ -67,45 +68,95 @@ function setupProfileImageInput() {
         err.textContent = '';
         if (!file) return;
 
-        // Limite de 2 MB (a imagem será comprimida, então podemos ser mais flexíveis)
-        if (file.size > 2 * 1024 * 1024) {
+        // Validar formato
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
             input.value = '';
-            err.textContent = 'Imagem muito grande. Use até 2 MB.';
+            err.textContent = 'Formato inválido. Use JPG, PNG ou WebP.';
+            return;
+        }
+
+        // Limite de 5 MB
+        if (file.size > 5 * 1024 * 1024) {
+            input.value = '';
+            err.textContent = 'Imagem muito grande. Use até 5 MB.';
             return;
         }
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-                const maxSize = 400; // Redimensionar para no máximo 400x400
+            const cropTarget = document.getElementById('cropImageTarget');
+            cropTarget.src = e.target.result;
+            
+            // Mostrar modal
+            document.getElementById('cropModalOverlay').classList.remove('hidden');
+            
+            // Se já existia um cropper, destrói
+            if (cropperInstance) {
+                cropperInstance.destroy();
+            }
 
-                if (width > height && width > maxSize) {
-                    height = Math.round(height * (maxSize / width));
-                    width = maxSize;
-                } else if (height > maxSize) {
-                    width = Math.round(width * (maxSize / height));
-                    height = maxSize;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-
-                // Comprimir como JPEG 80%
-                profileImageData = canvas.toDataURL('image/jpeg', 0.8);
-                
-                setAvatar(document.getElementById('profilePhotoPreview'), document.getElementById('editName').value, profileImageData);
-                setAvatar(document.getElementById('profileAvatarBig'), document.getElementById('editName').value, profileImageData);
-            };
-            img.src = e.target.result;
+            // Inicializar Cropper.js
+            cropperInstance = new Cropper(cropTarget, {
+                aspectRatio: 1, // Quadrado (vai ficar circular via CSS)
+                viewMode: 1, // Restringe a crop box ao tamanho do canvas
+                dragMode: 'move', // Permite arrastar a imagem
+                autoCropArea: 0.8,
+                restore: false,
+                guides: true,
+                center: true,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: false,
+            });
         };
         reader.readAsDataURL(file);
     });
+}
+
+function closeCropModal() {
+    document.getElementById('cropModalOverlay').classList.add('hidden');
+    const input = document.getElementById('profileImageInput');
+    if (input) input.value = '';
+    if (cropperInstance) {
+        cropperInstance.destroy();
+        cropperInstance = null;
+    }
+}
+
+function rotateCropper(degree) {
+    if (cropperInstance) {
+        cropperInstance.rotate(degree);
+    }
+}
+
+function zoomCropper(ratio) {
+    if (cropperInstance) {
+        cropperInstance.zoom(ratio);
+    }
+}
+
+function confirmCrop() {
+    if (!cropperInstance) return;
+
+    // Pega o canvas com a imagem recortada (tamanho 400x400 garantindo qualidade)
+    const canvas = cropperInstance.getCroppedCanvas({
+        width: 400,
+        height: 400,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+    });
+
+    // Converte para JPEG
+    profileImageData = canvas.toDataURL('image/jpeg', 0.85);
+
+    // Atualiza avatares na tela
+    const name = document.getElementById('editName').value;
+    setAvatar(document.getElementById('profilePhotoPreview'), name, profileImageData);
+    setAvatar(document.getElementById('profileAvatarBig'), name, profileImageData);
+
+    closeCropModal();
 }
 
 function removeProfileImage() {

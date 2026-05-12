@@ -896,3 +896,34 @@ a.nav-item.active {
         flex-direction: column;
     }
 }
+
+/* ============================================================
+   CROPPER.JS CUSTOM STYLES
+   ============================================================ */
+.crop-container {
+    width: 100%;
+    max-height: 60vh;
+    background: var(--bg-3);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Make the crop box circular for avatars */
+.cropper-view-box,
+.cropper-face {
+    border-radius: 50%;
+}
+
+/* Hide grid lines within the circular crop for better preview if desired, 
+   but standard social media croppers keep the grid. We will keep it for now. */
+.cropper-line,
+.cropper-point {
+    background-color: var(--accent) !important;
+}
+
+.cropper-view-box {
+    outline: 2px solid var(--accent) !important;
+}

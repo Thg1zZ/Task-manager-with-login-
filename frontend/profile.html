@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/kanban.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 </head>
 <body class="dashboard-page">
     <aside class="sidebar" id="sidebar">
@@ -75,7 +76,7 @@
                                 <div class="profile-photo-actions">
                                     <input type="file" id="profileImageInput" accept="image/*" class="field-input">
                                     <button type="button" class="btn-ghost" onclick="removeProfileImage()">Remover foto</button>
-                                    <span class="field-hint">Use uma imagem de até 2 MB (será comprimida).</span>
+                                    <span class="field-hint">Use uma imagem de até 5 MB (será comprimida).</span>
                                 </div>
                             </div>
                             <span class="field-error" id="profileImageErr"></span>
@@ -175,6 +176,31 @@
     </main>
 
     <div id="toastContainer" class="toast-container"></div>
+    
+    <!-- Modal de Recorte de Imagem -->
+    <div class="modal-overlay hidden" id="cropModalOverlay">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">Ajustar Foto do Perfil</h3>
+                <button class="modal-close" onclick="closeCropModal()">✕</button>
+            </div>
+            <div class="crop-container">
+                <img id="cropImageTarget" src="" alt="Imagem a ser recortada" style="max-width: 100%; display: block;">
+            </div>
+            <div class="crop-toolbar modal-row" style="margin-top: 16px; justify-content: center; gap: 8px;">
+                <button type="button" class="btn-ghost" onclick="rotateCropper(-90)" title="Rotacionar Esq">↺</button>
+                <button type="button" class="btn-ghost" onclick="rotateCropper(90)" title="Rotacionar Dir">↻</button>
+                <button type="button" class="btn-ghost" onclick="zoomCropper(0.1)" title="Zoom +">🔍+</button>
+                <button type="button" class="btn-ghost" onclick="zoomCropper(-0.1)" title="Zoom -">🔍-</button>
+            </div>
+            <div class="modal-actions" style="margin-top: 16px;">
+                <button type="button" class="btn-ghost" onclick="closeCropModal()">Cancelar</button>
+                <button type="button" class="btn-primary" onclick="confirmCrop()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="js/shared.js"></script>
     <script src="js/profile.js"></script>
