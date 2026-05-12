@@ -1,4 +1,5 @@
-const API_URL = 'https://task-manager-with-login.onrender.com/api';
+// Se estiver rodando localmente (localhost, 127.0.0.1 ou abrindo o arquivo direto no navegador) usa a API local.
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:8080/api' : 'https://task-manager-with-login.onrender.com/api';
 const token    = localStorage.getItem('token');
 const userName = localStorage.getItem('userName') || 'Usuário';
 const userEmail = localStorage.getItem('userEmail') || '';
