@@ -67,17 +67,42 @@ function setupProfileImageInput() {
         err.textContent = '';
         if (!file) return;
 
-        if (file.size > 1024 * 1024) {
+        // Limite de 2 MB (a imagem será comprimida, então podemos ser mais flexíveis)
+        if (file.size > 2 * 1024 * 1024) {
             input.value = '';
-            err.textContent = 'Imagem muito grande. Use até 1 MB.';
+            err.textContent = 'Imagem muito grande. Use até 2 MB.';
             return;
         }
 
         const reader = new FileReader();
-        reader.onload = () => {
-            profileImageData = reader.result;
-            setAvatar(document.getElementById('profilePhotoPreview'), document.getElementById('editName').value, profileImageData);
-            setAvatar(document.getElementById('profileAvatarBig'), document.getElementById('editName').value, profileImageData);
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const maxSize = 400; // Redimensionar para no máximo 400x400
+
+                if (width > height && width > maxSize) {
+                    height = Math.round(height * (maxSize / width));
+                    width = maxSize;
+                } else if (height > maxSize) {
+                    width = Math.round(width * (maxSize / height));
+                    height = maxSize;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Comprimir como JPEG 80%
+                profileImageData = canvas.toDataURL('image/jpeg', 0.8);
+                
+                setAvatar(document.getElementById('profilePhotoPreview'), document.getElementById('editName').value, profileImageData);
+                setAvatar(document.getElementById('profileAvatarBig'), document.getElementById('editName').value, profileImageData);
+            };
+            img.src = e.target.result;
         };
         reader.readAsDataURL(file);
     });
