@@ -26,6 +26,10 @@ function togglePassword(inputId) {
     eye.textContent = isHidden ? '🙈' : '👁';
 }
 
+function forgotPassword() {
+    showAlert('authAlert', 'Por favor, contate o administrador para redefinir sua senha.');
+}
+
 // --- Alertas e erros de campo -----------------------------------
 
 function showAlert(containerId, message, type = 'error') {
