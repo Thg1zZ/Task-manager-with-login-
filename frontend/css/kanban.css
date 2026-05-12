@@ -178,9 +178,7 @@ a.nav-item.active {
 .kanban-col {
     width: 360px;
     flex-shrink: 0;
-    background: rgba(18, 18, 20, 0.4);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: var(--bg-2);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     display: flex;
